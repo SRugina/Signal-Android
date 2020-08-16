@@ -44,6 +44,7 @@ import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.CharacterStyle;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -227,6 +228,8 @@ import org.thoughtcrime.securesms.stickers.StickerLocator;
 import org.thoughtcrime.securesms.stickers.StickerManagementActivity;
 import org.thoughtcrime.securesms.stickers.StickerPackInstallEvent;
 import org.thoughtcrime.securesms.stickers.StickerSearchRepository;
+import org.thoughtcrime.securesms.stylify.Match;
+import org.thoughtcrime.securesms.stylify.Stylify;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.CharacterCalculator.CharacterState;
@@ -1778,6 +1781,10 @@ public class ConversationActivity extends PassphraseRequiredActivity
     composeText.setOnClickListener(composeKeyPressedListener);
     composeText.setOnFocusChangeListener(composeKeyPressedListener);
 
+    StyleListener styleListener = new StyleListener();
+
+    composeText.addTextChangedListener(styleListener);
+
     if (Camera.getNumberOfCameras() > 0) {
       quickCameraToggle.setVisibility(View.VISIBLE);
       quickCameraToggle.setOnClickListener(new QuickCameraToggleListener());
@@ -2879,6 +2886,29 @@ public class ConversationActivity extends PassphraseRequiredActivity
     }
   }
 
+  private static class StyleListener implements TextWatcher {
+
+    private List<CharacterStyle> spans = new ArrayList<>();
+    private List<Match> matchList = new ArrayList<>();
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+      Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(s, spans, matchList);
+      spans = newLists.first();
+      matchList = newLists.second();
+    }
+  }
+  
   private class ComposeKeyPressedListener implements OnKeyListener, OnClickListener, TextWatcher, OnFocusChangeListener {
 
     int beforeLength;

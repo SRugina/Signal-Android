@@ -2,8 +2,10 @@ package org.thoughtcrime.securesms.stylify;
 
 import android.app.Application;
 import android.graphics.Typeface;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.text.style.MetricAffectingSpan;
 import android.text.style.StrikethroughSpan;
@@ -14,8 +16,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.whispersystems.libsignal.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
@@ -29,6 +33,9 @@ public class StylifyTest {
   private List<Character> strikeType;
   private List<Character> boldItalicType;
   private List<Character> strikeBoldItalicType;
+  
+  private List<CharacterStyle> spanList;
+  private List<Match> matchList;
   
   @Before
   public void SetUp() {
@@ -48,6 +55,9 @@ public class StylifyTest {
     strikeBoldItalicType = new ArrayList<>(strikeType);
     strikeBoldItalicType.addAll(boldType);
     strikeBoldItalicType.addAll(italicType);
+    
+    spanList = new ArrayList<>();
+    matchList = new ArrayList<>();
   }
   
   @Test
@@ -87,6 +97,42 @@ public class StylifyTest {
          */
     assertEquals(0, styledText.getSpanStart(span1));
     assertEquals(4, styledText.getSpanEnd(span1));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(1, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    MetricAffectingSpan inputSpan1 = (MetricAffectingSpan) inputSpans[0];
+    StyleSpan inputStyleSpan1 = (StyleSpan) inputSpan1.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan1.getStyle());
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(0, inputBody.getSpanStart(inputSpan1));
+    assertEquals(6, inputBody.getSpanEnd(inputSpan1));
   }
   
   @Test
@@ -140,6 +186,54 @@ public class StylifyTest {
     assertEquals(11, styledText.getSpanEnd(span2));
     assertEquals(12, styledText.getSpanStart(span3));
     assertEquals(25, styledText.getSpanEnd(span3));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(3, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    MetricAffectingSpan inputSpan1 = (MetricAffectingSpan) inputSpans[0];
+    StyleSpan inputStyleSpan1 = (StyleSpan) inputSpan1.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan1.getStyle());
+    
+    MetricAffectingSpan inputSpan2 = (MetricAffectingSpan) inputSpans[1];
+    StyleSpan inputStyleSpan2 = (StyleSpan) inputSpan2.getUnderlying();
+    assertEquals(Typeface.ITALIC, inputStyleSpan2.getStyle());
+    
+    CharacterStyle inputSpan3 = (CharacterStyle) inputSpans[2];
+    @SuppressWarnings("unused")
+    StrikethroughSpan inputStyleSpan3 = (StrikethroughSpan) inputSpan3.getUnderlying();
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(0, inputBody.getSpanStart(inputSpan1));
+    assertEquals(6, inputBody.getSpanEnd(inputSpan1));
+    assertEquals(7, inputBody.getSpanStart(inputSpan2));
+    assertEquals(15, inputBody.getSpanEnd(inputSpan2));
+    assertEquals(16, inputBody.getSpanStart(inputSpan3));
+    assertEquals(31, inputBody.getSpanEnd(inputSpan3));
   }
   
   @Test
@@ -185,6 +279,48 @@ public class StylifyTest {
     assertEquals(15, styledText.getSpanEnd(span1));
     assertEquals(0, styledText.getSpanStart(span2));
     assertEquals(15, styledText.getSpanEnd(span2));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(2, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    MetricAffectingSpan inputSpan1 = (MetricAffectingSpan) inputSpans[0];
+    StyleSpan inputStyleSpan1 = (StyleSpan) inputSpan1.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan1.getStyle());
+    
+    MetricAffectingSpan inputSpan2 = (MetricAffectingSpan) inputSpans[1];
+    StyleSpan inputStyleSpan2 = (StyleSpan) inputSpan2.getUnderlying();
+    assertEquals(Typeface.ITALIC, inputStyleSpan2.getStyle());
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(0, inputBody.getSpanStart(inputSpan1));
+    assertEquals(19, inputBody.getSpanEnd(inputSpan1));
+    assertEquals(0, inputBody.getSpanStart(inputSpan2));
+    assertEquals(19, inputBody.getSpanEnd(inputSpan2));
   }
   
   @Test
@@ -236,6 +372,54 @@ public class StylifyTest {
     assertEquals(29, styledText.getSpanEnd(span2));
     assertEquals(0, styledText.getSpanStart(span3));
     assertEquals(29, styledText.getSpanEnd(span3));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(3, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    CharacterStyle inputSpan1 = (CharacterStyle) inputSpans[0];
+    @SuppressWarnings("unused")
+    StrikethroughSpan inputStyleSpan1 = (StrikethroughSpan) inputSpan1.getUnderlying();
+    
+    MetricAffectingSpan inputSpan2 = (MetricAffectingSpan) inputSpans[1];
+    StyleSpan inputStyleSpan2 = (StyleSpan) inputSpan2.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan2.getStyle());
+    
+    MetricAffectingSpan inputSpan3 = (MetricAffectingSpan) inputSpans[2];
+    StyleSpan inputStyleSpan3 = (StyleSpan) inputSpan3.getUnderlying();
+    assertEquals(Typeface.ITALIC, inputStyleSpan3.getStyle());
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(0, inputBody.getSpanStart(inputSpan1));
+    assertEquals(35, inputBody.getSpanEnd(inputSpan1));
+    assertEquals(0, inputBody.getSpanStart(inputSpan2));
+    assertEquals(35, inputBody.getSpanEnd(inputSpan2));
+    assertEquals(0, inputBody.getSpanStart(inputSpan3));
+    assertEquals(35, inputBody.getSpanEnd(inputSpan3));
   }
   
   @Test
@@ -295,6 +479,60 @@ public class StylifyTest {
     assertEquals(21, styledText.getSpanEnd(span3));
     assertEquals(21, styledText.getSpanStart(span4));
     assertEquals(28, styledText.getSpanEnd(span4));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(4, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    MetricAffectingSpan inputSpan1 = (MetricAffectingSpan) inputSpans[0];
+    StyleSpan inputStyleSpan1 = (StyleSpan) inputSpan1.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan1.getStyle());
+    
+    MetricAffectingSpan inputSpan2 = (MetricAffectingSpan) inputSpans[1];
+    StyleSpan inputStyleSpan2 = (StyleSpan) inputSpan2.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan2.getStyle());
+    
+    MetricAffectingSpan inputSpan3 = (MetricAffectingSpan) inputSpans[2];
+    StyleSpan inputStyleSpan3 = (StyleSpan) inputSpan3.getUnderlying();
+    assertEquals(Typeface.ITALIC, inputStyleSpan3.getStyle());
+    
+    MetricAffectingSpan inputSpan4 = (MetricAffectingSpan) inputSpans[3];
+    StyleSpan inputStyleSpan4 = (StyleSpan) inputSpan4.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan4.getStyle());
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(0, inputBody.getSpanStart(inputSpan1));
+    assertEquals(11, inputBody.getSpanEnd(inputSpan1));
+    assertEquals(11, inputBody.getSpanStart(inputSpan2));
+    assertEquals(24, inputBody.getSpanEnd(inputSpan2));
+    assertEquals(11, inputBody.getSpanStart(inputSpan3));
+    assertEquals(24, inputBody.getSpanEnd(inputSpan3));
+    assertEquals(24, inputBody.getSpanStart(inputSpan4));
+    assertEquals(32, inputBody.getSpanEnd(inputSpan4));
   }
   
   @Test
@@ -341,6 +579,48 @@ public class StylifyTest {
     assertEquals(4, styledText.getSpanEnd(span1));
     assertEquals(14, styledText.getSpanStart(span2));
     assertEquals(26, styledText.getSpanEnd(span2));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(2, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    MetricAffectingSpan inputSpan1 = (MetricAffectingSpan) inputSpans[0];
+    StyleSpan inputStyleSpan1 = (StyleSpan) inputSpan1.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan1.getStyle());
+    
+    MetricAffectingSpan inputSpan2 = (MetricAffectingSpan) inputSpans[1];
+    StyleSpan inputStyleSpan2 = (StyleSpan) inputSpan2.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan2.getStyle());
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(0, inputBody.getSpanStart(inputSpan1));
+    assertEquals(6, inputBody.getSpanEnd(inputSpan1));
+    assertEquals(16, inputBody.getSpanStart(inputSpan2));
+    assertEquals(30, inputBody.getSpanEnd(inputSpan2));
   }
   
   @Test
@@ -380,6 +660,42 @@ public class StylifyTest {
          */
     assertEquals(8, styledText.getSpanStart(span1));
     assertEquals(12, styledText.getSpanEnd(span1));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(1, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    MetricAffectingSpan inputSpan1 = (MetricAffectingSpan) inputSpans[0];
+    StyleSpan inputStyleSpan1 = (StyleSpan) inputSpan1.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan1.getStyle());
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(8, inputBody.getSpanStart(inputSpan1));
+    assertEquals(14, inputBody.getSpanEnd(inputSpan1));
   }
   
   @Test
@@ -426,6 +742,48 @@ public class StylifyTest {
     assertEquals(5, styledText.getSpanEnd(span1));
     assertEquals(7, styledText.getSpanStart(span2));
     assertEquals(13, styledText.getSpanEnd(span2));
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(expectedData.toString(), matchList.toString());
+    
+    // check that no markup tags were removed
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that the correct number of spans were created
+    assertEquals(2, inputSpans.length);
+    
+    // check that the span is of the appropriate instance
+    MetricAffectingSpan inputSpan1 = (MetricAffectingSpan) inputSpans[0];
+    StyleSpan inputStyleSpan1 = (StyleSpan) inputSpan1.getUnderlying();
+    assertEquals(Typeface.BOLD, inputStyleSpan1.getStyle());
+    
+    MetricAffectingSpan inputSpan2 = (MetricAffectingSpan) inputSpans[1];
+    StyleSpan inputStyleSpan2 = (StyleSpan) inputSpan2.getUnderlying();
+    assertEquals(Typeface.ITALIC, inputStyleSpan2.getStyle());
+
+        /*
+          Check that the start and end indices are the expected ones.
+          The ends should be Match.lastIndex + 1
+         */
+    assertEquals(1, inputBody.getSpanStart(inputSpan1));
+    assertEquals(7, inputBody.getSpanEnd(inputSpan1));
+    assertEquals(9, inputBody.getSpanStart(inputSpan2));
+    assertEquals(17, inputBody.getSpanEnd(inputSpan2));
   }
   
   @Test
@@ -447,6 +805,30 @@ public class StylifyTest {
     
     // check that no spans were created
     assertEquals(0, spans.length);
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(matchList.toString(), "[]");
+    
+    // check that the plaintext remained intact
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable (should be 0)
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that no spans were created
+    assertEquals(0, inputSpans.length);
   }
   
   @Test
@@ -468,6 +850,30 @@ public class StylifyTest {
     
     // check that no spans were created
     assertEquals(0, spans.length);
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(matchList.toString(), "[]");
+    
+    // check that the plaintext remained intact
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable (should be 0)
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that no spans were created
+    assertEquals(0, inputSpans.length);
   }
   
   @Test
@@ -489,5 +895,29 @@ public class StylifyTest {
     
     // check that no spans were created
     assertEquals(0, spans.length);
+    
+    // test styleInPlace
+    
+    Editable inputBody = new SpannableStringBuilder(text);
+    Pair<List<CharacterStyle>, List<Match>> newLists = Stylify.styleInPlace(inputBody, spanList,
+        matchList);
+    spanList = newLists.first();
+    matchList = newLists.second();
+    assertEquals(matchList.toString(), "[]");
+    
+    // check that the plaintext remained intact
+    assertEquals(text.toString(), inputBody.toString());
+    
+    // get all the spans attached to the Spannable (should be 0)
+    Object[] inputSpans = inputBody.getSpans(0, inputBody.length(), Object.class);
+    @SuppressWarnings("unchecked")
+    List<CharacterStyle> inputSpanList =
+        (List<CharacterStyle>) (List<?>) Arrays.asList(inputBody.getSpans(0, inputBody.length(),
+            Object.class));
+    
+    assertEquals(spanList, inputSpanList);
+    
+    // check that no spans were created
+    assertEquals(0, inputSpans.length);
   }
 }

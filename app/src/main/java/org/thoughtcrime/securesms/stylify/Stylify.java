@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.stylify;
 
 import android.graphics.Typeface;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -8,10 +9,13 @@ import android.text.style.CharacterStyle;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 
+import org.whispersystems.libsignal.util.Pair;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -183,5 +187,35 @@ public class Stylify {
     }
     
     return message;
+  }
+  
+  public static Pair<List<CharacterStyle>, List<Match>> styleInPlace(Editable inputBody,
+                                                                     List<CharacterStyle> spans,
+                                                                     List<Match> matchList) {
+    List<Match> newMatchList = stylifyMatch(inputBody);
+    if (!matchList.toString().equals(newMatchList.toString())) {
+      matchList = newMatchList;
+      for (Iterator<CharacterStyle> iterator = spans.iterator(); iterator.hasNext(); ) {
+        CharacterStyle span = iterator.next();
+        inputBody.removeSpan(span);
+        iterator.remove();
+      }
+      
+      for (Match match : matchList) {
+        List<Character> type = new ArrayList<>(match.type);
+        int start = match.index;
+        int end = match.lastIndex + 1;
+        
+        // apply styling to text
+        for (StyleType style : STYLES.values()) {
+          if (type.contains(style.character)) {
+            CharacterStyle span = CharacterStyle.wrap(style.style);
+            inputBody.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spans.add(span);
+          }
+        }
+      }
+    }
+    return new Pair<>(spans, matchList);
   }
 }
