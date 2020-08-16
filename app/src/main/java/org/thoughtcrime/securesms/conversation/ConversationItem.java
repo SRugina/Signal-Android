@@ -108,6 +108,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.revealable.ViewOnceMessageView;
 import org.thoughtcrime.securesms.revealable.ViewOnceUtil;
 import org.thoughtcrime.securesms.stickers.StickerUrl;
+import org.thoughtcrime.securesms.stylify.Stylify;
 import org.thoughtcrime.securesms.util.DateUtils;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.InterceptableLongClickCopyLinkSpan;
@@ -605,6 +606,7 @@ public class ConversationItem extends LinearLayout implements BindableConversati
       bodyText.setVisibility(View.GONE);
     } else {
       Spannable styledText = linkifyMessageBody(conversationMessage.getDisplayBody(getContext()), batchSelected.isEmpty());
+      styledText = Stylify.style(styledText);
       styledText = SearchUtil.getHighlightedSpan(locale, () -> new BackgroundColorSpan(Color.YELLOW), styledText, searchQuery);
       styledText = SearchUtil.getHighlightedSpan(locale, () -> new ForegroundColorSpan(Color.BLACK), styledText, searchQuery);
 
